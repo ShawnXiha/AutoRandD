@@ -1,0 +1,49 @@
+[project]
+name = "auto-randd"
+version = "0.1.0"
+description = "Food Science and Bioengineering Multi-agent R&D Simulation System"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"},
+]
+dependencies = [
+    "crewai>=0.28.0",
+    "crewai-tools>=0.3.0",
+    "langchain-community>=0.0.38",
+    "langchain>=0.1.0",
+    "duckduckgo-search>=4.0.0",
+    "tavily-search>=0.3.0",
+    "serper-dev>=0.3.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.4.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+    "aiofiles>=23.0.0",
+    "scipy>=1.11.0",
+    "matplotlib>=3.7.0",
+    "tqdm>=4.66.0",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+]
