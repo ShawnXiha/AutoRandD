@@ -21,7 +21,7 @@ class ReportAnalyst(BaseAgent):
         super().__init__(
             agent_name="报告总结分析师",
             agent_description="负责整合所有Agent的工作成果，生成完整的项目结题报告",
-            tools=self._create_professional_tools()
+            tools=self._create_professional_tools(),
         )
 
     def _create_professional_tools(self) -> List[BaseTool]:
@@ -237,114 +237,152 @@ class ReportAnalyst(BaseAgent):
             "report_date": datetime.now().isoformat(),
             "report_version": "1.0",
             "report_status": "已完成",
-
             # 报告摘要
             "executive_summary": {
                 "project_background": self._generate_project_background(research_goal),
                 "key_achievements": self._extract_key_achievements(integration_results),
                 "major_findings": self._extract_major_findings(analysis_results),
                 "conclusions": self._summarize_conclusions(conclusion_results),
-                "recommendations": self._extract_recommendations(outlook_results)
+                "recommendations": self._extract_recommendations(outlook_results),
             },
-
             # 第一部分：项目概述
             "project_overview": {
-                "research_background": self._generate_research_background(research_goal, intelligence_report),
+                "research_background": self._generate_research_background(
+                    research_goal, intelligence_report
+                ),
                 "project_objectives": self._define_project_objectives(final_rd_plan),
                 "scope_delimitations": self._define_scope_delimitations(),
-                "methodology_overview": self._summarize_methodology(sop_document)
+                "methodology_overview": self._summarize_methodology(sop_document),
             },
-
             # 第二部分：技术路线
             "technical_approach": {
-                "technology_selection": self._analyze_technology_selection(final_rd_plan),
+                "technology_selection": self._analyze_technology_selection(
+                    final_rd_plan
+                ),
                 "process_design": self._summarize_process_design(sop_document),
-                "parameter_optimization": self._summarize_parameter_optimization(simulation_report),
-                "quality_control": self._summarize_quality_control(sop_document)
+                "parameter_optimization": self._summarize_parameter_optimization(
+                    simulation_report
+                ),
+                "quality_control": self._summarize_quality_control(sop_document),
             },
-
             # 第三部分：执行情况
             "execution_status": {
-                "timeline_performance": self._evaluate_timeline_performance(final_rd_plan),
-                "budget_utilization": self._evaluate_budget_utilization(final_rd_plan, funding),
-                "resource_allocation": self._summarize_resource_allocation(final_rd_plan),
-                "milestone_achievements": self._list_milestone_achievements(simulation_report)
+                "timeline_performance": self._evaluate_timeline_performance(
+                    final_rd_plan
+                ),
+                "budget_utilization": self._evaluate_budget_utilization(
+                    final_rd_plan, funding
+                ),
+                "resource_allocation": self._summarize_resource_allocation(
+                    final_rd_plan
+                ),
+                "milestone_achievements": self._list_milestone_achievements(
+                    simulation_report
+                ),
             },
-
             # 第四部分：实验结果
             "experimental_results": {
                 "data_overview": self._summarize_data_overview(simulation_report),
                 "key_findings": self._present_key_findings(simulation_report),
-                "statistical_analysis": self._summarize_statistical_analysis(simulation_report),
-                "comparison_with_benchmarks": self._compare_with_benchmarks(intelligence_report, simulation_report)
+                "statistical_analysis": self._summarize_statistical_analysis(
+                    simulation_report
+                ),
+                "comparison_with_benchmarks": self._compare_with_benchmarks(
+                    intelligence_report, simulation_report
+                ),
             },
-
             # 第五部分：数据分析与讨论
             "data_analysis_and_discussion": {
                 "interpretation_of_results": self._interpret_results(analysis_results),
                 "mechanism_analysis": self._analyze_mechanisms(),
                 "relationship_analysis": self._analyze_relationships(simulation_report),
-                "implications": self._discuss_implications()
+                "implications": self._discuss_implications(),
             },
-
             # 第六部分：科学结论
             "scientific_conclusions": {
-                "technical_feasibility": self._assess_technical_feasibility(conclusion_results),
+                "technical_feasibility": self._assess_technical_feasibility(
+                    conclusion_results
+                ),
                 "product_quality": self._assess_product_quality(simulation_report),
-                "economic_viability": self._assess_economic_viability(conclusion_results, funding),
-                "innovation_contributions": self._identify_innovations(conclusion_results)
+                "economic_viability": self._assess_economic_viability(
+                    conclusion_results, funding
+                ),
+                "innovation_contributions": self._identify_innovations(
+                    conclusion_results
+                ),
             },
-
             # 第七部分：问题与挑战
             "challenges_and_solutions": {
-                "technical_challenges": self._identify_technical_challenges(integration_results),
-                "resource_constraints": self._identify_resource_constraints(final_rd_plan),
-                "operational_difficulties": self._identify_operational_difficulties(simulation_report),
-                "mitigation_strategies": self._propose_mitigation_strategies()
+                "technical_challenges": self._identify_technical_challenges(
+                    integration_results
+                ),
+                "resource_constraints": self._identify_resource_constraints(
+                    final_rd_plan
+                ),
+                "operational_difficulties": self._identify_operational_difficulties(
+                    simulation_report
+                ),
+                "mitigation_strategies": self._propose_mitigation_strategies(),
             },
-
             # 第八部分：未来展望
             "future_outlook": {
                 "short_term_goals": self._define_short_term_goals(outlook_results),
                 "medium_term_plans": self._define_medium_term_plans(outlook_results),
                 "long_term_vision": self._define_long_term_vision(outlook_results),
                 "technology_roadmap": self._create_technology_roadmap(outlook_results),
-                "market_expansion": self._plan_market_expansion()
+                "market_expansion": self._plan_market_expansion(),
             },
-
             # 第九部分：项目评估
             "project_evaluation": {
                 "goal_attainment": self._evaluate_goal_attainment(evaluation_results),
                 "efficiency_assessment": self._assess_efficiency(evaluation_results),
-                "risk_management_review": self._review_risk_management(evaluation_results),
+                "risk_management_review": self._review_risk_management(
+                    evaluation_results
+                ),
                 "team_performance": self._evaluate_team_performance(evaluation_results),
-                "overall_assessment": self._provide_overall_assessment(evaluation_results)
+                "overall_assessment": self._provide_overall_assessment(
+                    evaluation_results
+                ),
             },
-
             # 第十部分：建议
             "recommendations": {
-                "technical_recommendations": self._provide_technical_recommendations(conclusion_results),
-                "business_recommendations": self._provide_business_recommendations(outlook_results),
-                "research_recommendations": self._provide_research_recommendations(simulation_report),
-                "implementation_recommendations": self._provide_implementation_recommendations(final_rd_plan)
+                "technical_recommendations": self._provide_technical_recommendations(
+                    conclusion_results
+                ),
+                "business_recommendations": self._provide_business_recommendations(
+                    outlook_results
+                ),
+                "research_recommendations": self._provide_research_recommendations(
+                    simulation_report
+                ),
+                "implementation_recommendations": self._provide_implementation_recommendations(
+                    final_rd_plan
+                ),
             },
-
             # 附录
             "appendix": {
                 "detailed_data": simulation_report.get("raw_data", []),
-                "statistical_analysis": simulation_report.get("statistical_analysis", {}),
-                "reference_materials": self._compile_reference_materials(intelligence_report),
+                "statistical_analysis": simulation_report.get(
+                    "statistical_analysis", {}
+                ),
+                "reference_materials": self._compile_reference_materials(
+                    intelligence_report
+                ),
                 "contact_information": self._get_contact_information(),
-                "glossary": self._create_glossary()
-            }
+                "glossary": self._create_glossary(),
+            },
         }
+
+        final_report["markdown_content"] = self._create_markdown_content(final_report)
 
         # 保存最终报告
         filename = f"data/final_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         self.save_result(final_report, filename)
 
         # 生成Markdown格式的报告
-        markdown_filename = f"data/final_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        markdown_filename = (
+            f"data/final_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        )
         self.generate_markdown_report(final_report, markdown_filename)
 
         return final_report
@@ -360,7 +398,7 @@ class ReportAnalyst(BaseAgent):
             "建立了完整的质量控制体系",
             "开发了符合要求的产品原型",
             "形成了详细的技术文档",
-            "申请了相关专利保护"
+            "申请了相关专利保护",
         ]
 
     def _extract_major_findings(self, analysis_results: str) -> List[str]:
@@ -369,7 +407,7 @@ class ReportAnalyst(BaseAgent):
             "温度对提取率有显著影响，最佳范围为60-70°C",
             "pH值在5.0-6.0时产品质量最佳",
             "反应时间60分钟可达到理想的提取效果",
-            "产品纯度和活性保留率达到行业领先水平"
+            "产品纯度和活性保留率达到行业领先水平",
         ]
 
     def _summarize_conclusions(self, conclusion_results: str) -> str:
@@ -382,12 +420,18 @@ class ReportAnalyst(BaseAgent):
             "进一步优化工艺参数，提高生产效率",
             "加强质量控制，确保产品稳定性",
             "开展市场推广，扩大市场占有率",
-            "持续技术创新，保持竞争优势"
+            "持续技术创新，保持竞争优势",
         ]
 
-    def _generate_research_background(self, research_goal: str, intelligence_report: Dict) -> str:
+    def _generate_research_background(
+        self, research_goal: str, intelligence_report: Dict
+    ) -> str:
         """生成研究背景"""
-        market_info = intelligence_report.get("key_findings", [])
+        market_info = (
+            intelligence_report.get("key_findings", [])
+            if isinstance(intelligence_report, dict)
+            else []
+        )
         background = f"随着市场需求的不断增长，{research_goal}的研发具有重要的现实意义和商业价值。"
 
         if market_info:
@@ -397,19 +441,38 @@ class ReportAnalyst(BaseAgent):
 
     def _define_project_objectives(self, final_rd_plan: Dict) -> List[str]:
         """定义项目目标"""
-        return final_rd_plan.get("project_overview", {}).get("project_objectives", [])
+        plan = self._get_effective_plan(final_rd_plan)
+        project_overview = plan.get("project_overview", {})
+        objectives = project_overview.get("project_objectives", [])
+        if objectives:
+            return objectives
+
+        objective = project_overview.get("project_objective")
+        if objective:
+            return [
+                objective,
+                "建立可复现的模拟实验数据与统计分析链路",
+                "输出可用于工艺评估的结论报告与优化建议",
+            ]
+
+        return ["完成研发目标验证", "形成实验数据与结题报告", "沉淀可复用工艺方法"]
 
     def _define_scope_delimitations(self) -> Dict[str, str]:
         """定义范围限制"""
         return {
             "included": "工艺优化、质量控制、小试实验",
             "excluded": "工业化生产、市场推广",
-            "assumptions": "现有设备条件、标准实验方法"
+            "assumptions": "现有设备条件、标准实验方法",
         }
 
     def _summarize_methodology(self, sop_document: Dict) -> str:
         """总结方法论"""
-        return "采用实验设计方法，通过系统性的参数优化，确定最佳工艺条件。"
+        matrix = sop_document.get("experiment_design", {}).get(
+            "experimental_matrix", {}
+        )
+        design_type = matrix.get("design_type", "实验设计方法")
+        runs = matrix.get("runs", "多组")
+        return f"采用{design_type}，结合SOP中的关键工艺参数与质量控制节点，对约{runs}组实验进行系统优化与对照验证。"
 
     def _analyze_technology_selection(self, final_rd_plan: Dict) -> Dict[str, Any]:
         """分析技术选择"""
@@ -417,24 +480,45 @@ class ReportAnalyst(BaseAgent):
             "selected_technology": "提取技术",
             "selection_criteria": ["技术成熟度", "成本效益", "产品质量"],
             "advantages": ["效率高", "成本低", "质量稳定"],
-            "disadvantages": ["能耗较高", "设备要求严格"]
+            "disadvantages": ["能耗较高", "设备要求严格"],
         }
 
     def _summarize_process_design(self, sop_document: Dict) -> str:
         """总结工艺设计"""
-        return "采用多阶段工艺设计，包括预处理、提取、分离、纯化和干燥等关键步骤。"
+        procedures = sop_document.get("experimental_procedure", {})
+        steps = []
+        if procedures.get("pre_experiment"):
+            steps.append("实验前准备")
+        if procedures.get("main_experiment"):
+            steps.append("核心实验执行")
+        if procedures.get("post_experiment"):
+            steps.append("实验后处理")
+        if not steps:
+            steps = ["预处理", "工艺执行", "检测分析"]
+        return f"工艺流程覆盖{'、'.join(steps)}，并辅以质量控制与异常处置要求。"
 
-    def _summarize_parameter_optimization(self, simulation_report: Dict) -> Dict[str, Any]:
+    def _summarize_parameter_optimization(
+        self, simulation_report: Dict
+    ) -> Dict[str, Any]:
         """总结参数优化"""
+        optimization = simulation_report.get("optimization_analysis", {})
+        best_conditions = optimization.get("best_conditions", {})
+        recommended_window = optimization.get("recommended_window", {})
         return {
             "optimized_parameters": {
-                "temperature": "65°C",
-                "time": "60 min",
-                "pH": "5.5",
-                "concentration": "12%"
+                "temperature": recommended_window.get("temperature")
+                or f"{best_conditions.get('temperature', 65)}°C",
+                "time": recommended_window.get("time")
+                or f"{best_conditions.get('time', 60)} min",
+                "pH": recommended_window.get("ph")
+                or str(best_conditions.get("ph", 5.5)),
+                "concentration": recommended_window.get("concentration")
+                or f"{best_conditions.get('concentration', 12)}%",
             },
-            "optimization_method": "响应面法",
-            "improvement_rate": "25%"
+            "optimization_method": simulation_report.get("experimental_design", {}).get(
+                "design_type", "响应面法"
+            ),
+            "improvement_rate": f"{round(simulation_report.get('simulation_overview', {}).get('success_rate', 0), 1)}%成功样本进入推荐窗口",
         }
 
     def _summarize_quality_control(self, sop_document: Dict) -> str:
@@ -451,97 +535,144 @@ class ReportAnalyst(BaseAgent):
                 {"milestone": "技术方案确定", "status": "按时完成"},
                 {"milestone": "实验室小试成功", "status": "提前完成"},
                 {"milestone": "中试产品达标", "status": "按时完成"},
-                {"milestone": "工艺优化完成", "status": "提前完成"}
-            ]
+                {"milestone": "工艺优化完成", "status": "提前完成"},
+            ],
         }
 
-    def _evaluate_budget_utilization(self, final_rd_plan: Dict, funding: str) -> Dict[str, Any]:
+    def _evaluate_budget_utilization(
+        self, final_rd_plan: Dict, funding: str
+    ) -> Dict[str, Any]:
         """评估预算使用情况"""
+        budget_amount = self._extract_budget_amount(funding)
+        utilized_budget = budget_amount * 0.95 if budget_amount is not None else None
         return {
             "total_budget": funding,
-            "utilized_budget": f"{int(funding[:-2]) * 0.95}万元",
+            "utilized_budget": f"{utilized_budget:.2f}万元"
+            if utilized_budget is not None
+            else "待核算",
             "utilization_rate": "95%",
             "cost_savings": "节约5%",
-            "cost_efficiency": "高"
+            "cost_efficiency": "高",
         }
 
     def _summarize_resource_allocation(self, final_rd_plan: Dict) -> Dict[str, Any]:
         """总结资源配置"""
-        return final_rd_plan.get("resource_allocation", {})
+        plan = self._get_effective_plan(final_rd_plan)
+        return plan.get("resource_allocation", {})
 
-    def _list_milestone_achievements(self, simulation_report: Dict) -> List[Dict[str, str]]:
+    def _list_milestone_achievements(
+        self, simulation_report: Dict
+    ) -> List[Dict[str, str]]:
         """列出里程碑成就"""
+        best_conditions = simulation_report.get("optimization_analysis", {}).get(
+            "best_conditions", {}
+        )
+        success_rate = simulation_report.get("simulation_overview", {}).get(
+            "success_rate", 0
+        )
         return [
             {
                 "milestone": "技术方案确定",
                 "date": "第1个月",
-                "achievement": "完成技术路线选择"
+                "achievement": "完成技术路线选择",
             },
             {
                 "milestone": "实验室小试成功",
                 "date": "第4个月",
-                "achievement": "提取率达到85%以上"
+                "achievement": f"推荐样本的提取率达到{round(best_conditions.get('quality_score', 85), 1)}分对应的高质量水平",
             },
             {
                 "milestone": "中试产品达标",
                 "date": "第7个月",
-                "achievement": "产品质量符合标准"
+                "achievement": f"模拟成功率达到{round(success_rate, 1)}%，具备继续放大验证基础",
             },
             {
                 "milestone": "工艺优化完成",
                 "date": "第9个月",
-                "achievement": "参数优化完成"
-            }
+                "achievement": "形成可执行的推荐参数窗口与优化策略",
+            },
         ]
 
     def _summarize_data_overview(self, simulation_report: Dict) -> Dict[str, Any]:
         """总结数据概况"""
+        raw_data = simulation_report.get("raw_data", [])
+        status_distribution = simulation_report.get("grouped_summaries", {}).get(
+            "status_distribution", {}
+        )
+        success_rate = simulation_report.get("simulation_overview", {}).get(
+            "success_rate", 0
+        )
+        response_variables = simulation_report.get("experimental_design", {}).get(
+            "response_variables", []
+        )
         return {
-            "total_experiments": 36,
-            "successful_experiments": 32,
-            "success_rate": "88.9%",
-            "data_points": 144,
-            "analysis_methods": ["ANOVA", "回归分析", "相关性分析"]
+            "total_experiments": len(raw_data),
+            "successful_experiments": status_distribution.get("成功", 0),
+            "success_rate": f"{round(success_rate, 1)}%",
+            "data_points": len(raw_data) * max(1, len(response_variables)),
+            "analysis_methods": ["方差分析", "回归分析", "相关性分析", "最佳条件识别"],
         }
 
     def _present_key_findings(self, simulation_report: Dict) -> List[str]:
         """展示关键发现"""
-        return [
-            "最佳工艺条件：温度65°C，时间60分钟，pH值5.5，浓度12%",
-            "最高提取率：92.5%",
-            "产品纯度：98.2%",
-            "活性保留率：95.8%",
-            "质量评分：94.6分"
-        ]
+        findings = simulation_report.get("key_findings", [])[:]
+        best_conditions = simulation_report.get("optimization_analysis", {}).get(
+            "best_conditions", {}
+        )
+        if best_conditions:
+            findings.insert(
+                0,
+                "最佳工艺条件："
+                f"温度{best_conditions.get('temperature', '--')}°C，"
+                f"时间{best_conditions.get('time', '--')}min，"
+                f"pH值{best_conditions.get('ph', '--')}，"
+                f"浓度{best_conditions.get('concentration', '--')}%",
+            )
+        findings.extend(simulation_report.get("simulated_conclusions", [])[:2])
+        return findings[:6]
 
-    def _summarize_statistical_analysis(self, simulation_report: Dict) -> Dict[str, Any]:
+    def _summarize_statistical_analysis(
+        self, simulation_report: Dict
+    ) -> Dict[str, Any]:
         """总结统计分析"""
         stats = simulation_report.get("statistical_analysis", {})
+        anova = stats.get("statistical_tests", {}).get(
+            "anova_temperature_to_extraction", {}
+        )
+        correlation = stats.get("statistical_tests", {}).get("correlation_analysis", {})
+        regression = stats.get("statistical_tests", {}).get("regression_analysis", {})
+        corr_value = correlation.get("extraction_purity")
         return {
-            "significance_level": "p < 0.05",
+            "significance_level": f"p = {anova.get('p_value', 0):.4f}"
+            if "p_value" in anova
+            else "待补充",
             "confidence_interval": "95%",
-            "correlation_analysis": "提取率与纯度呈显著正相关",
-            "regression_model": "R² = 0.89"
+            "correlation_analysis": (
+                f"提取率与纯度相关系数 r = {corr_value:.3f}"
+                if isinstance(corr_value, (int, float))
+                else "相关性分析已完成"
+            ),
+            "regression_model": f"R² = {regression.get('r_squared', 0):.3f}"
+            if regression
+            else "待补充",
         }
 
-    def _compare_with_benchmarks(self, intelligence_report: Dict, simulation_report: Dict) -> Dict[str, Any]:
+    def _compare_with_benchmarks(
+        self, intelligence_report: Dict, simulation_report: Dict
+    ) -> Dict[str, Any]:
         """与基准对比"""
         return {
             "industry_average": {
                 "extraction_rate": "80%",
                 "purity": "95%",
-                "cost": "100元/kg"
+                "cost": "100元/kg",
             },
             "our_results": {
                 "extraction_rate": "92.5%",
                 "purity": "98.2%",
-                "cost": "85元/kg"
+                "cost": "85元/kg",
             },
-            "advantages": [
-                "提取率提高15.6%",
-                "纯度提高3.2%",
-                "成本降低15%"
-            ]
+            "advantages": ["提取率提高15.6%", "纯度提高3.2%", "成本降低15%"],
         }
 
     def _interpret_results(self, analysis_results: str) -> str:
@@ -553,15 +684,24 @@ class ReportAnalyst(BaseAgent):
         return [
             "温度升高提高了反应速率",
             "pH值优化增强了产物稳定性",
-            "适当的浓度梯度提高了传质效率"
+            "适当的浓度梯度提高了传质效率",
         ]
 
     def _analyze_relationships(self, simulation_report: Dict) -> Dict[str, Any]:
         """分析关系"""
+        correlation = (
+            simulation_report.get("statistical_analysis", {})
+            .get("statistical_tests", {})
+            .get("correlation_analysis", {})
+        )
         return {
-            "temperature_extraction": "正相关，r = 0.85",
-            "time_efficiency": "先升后降，最佳60分钟",
-            "pH_quality": "二次关系，最佳pH=5.5"
+            "temperature_extraction": self._format_correlation_statement(
+                correlation.get("temperature_aroma"), "温度", "香气保留率"
+            ),
+            "time_efficiency": "时间对效率呈窗口型影响，推荐在高分样本区间内控制停留时间",
+            "pH_quality": self._format_correlation_statement(
+                correlation.get("extraction_purity"), "提取率", "纯度"
+            ),
         }
 
     def _discuss_implications(self) -> List[str]:
@@ -569,7 +709,7 @@ class ReportAnalyst(BaseAgent):
         return [
             "技术改进显著提升了产品竞争力",
             "工艺优化降低了生产成本",
-            "质量控制确保了产品稳定性"
+            "质量控制确保了产品稳定性",
         ]
 
     def _assess_technical_feasibility(self, conclusion_results: str) -> str:
@@ -579,7 +719,14 @@ class ReportAnalyst(BaseAgent):
     def _assess_product_quality(self, simulation_report: Dict) -> str:
         """评估产品质量"""
         quality_metrics = simulation_report.get("data_quality", {})
-        return "产品质量优良，各项指标均达到或超过行业标准。"
+        best_conditions = simulation_report.get("optimization_analysis", {}).get(
+            "best_conditions", {}
+        )
+        return (
+            "产品质量总体稳定，"
+            f"数据完整性约为{round(quality_metrics.get('completeness', 0), 1)}%，"
+            f"最佳样本质量评分达到{round(best_conditions.get('quality_score', 0), 1)}分。"
+        )
 
     def _assess_economic_viability(self, conclusion_results: str, funding: str) -> str:
         """评估经济可行性"""
@@ -590,7 +737,7 @@ class ReportAnalyst(BaseAgent):
         return [
             "开发了新的工艺参数优化方法",
             "创新了质量控制体系",
-            "建立了快速检测方法"
+            "建立了快速检测方法",
         ]
 
     def _identify_technical_challenges(self, integration_results: str) -> List[str]:
@@ -598,48 +745,40 @@ class ReportAnalyst(BaseAgent):
         return [
             "工艺参数控制精度要求高",
             "设备选型需要进一步优化",
-            "质量检测方法需要标准化"
+            "质量检测方法需要标准化",
         ]
 
     def _identify_resource_constraints(self, final_rd_plan: Dict) -> List[str]:
         """识别资源限制"""
-        return [
-            "研发资金有限",
-            "实验设备不足",
-            "技术人员短缺"
-        ]
+        return ["研发资金有限", "实验设备不足", "技术人员短缺"]
 
     def _identify_operational_difficulties(self, simulation_report: Dict) -> List[str]:
         """识别操作困难"""
-        return [
-            "实验重复性需要提高",
-            "数据记录不够规范",
-            "异常情况处理不够及时"
-        ]
+        difficulties = []
+        anomalies = simulation_report.get("anomalies", [])
+        if anomalies:
+            difficulties.append(
+                f"共识别到{len(anomalies)}条异常记录，需要进一步复核边缘条件与测量波动"
+            )
+        difficulties.extend(
+            [
+                "高温与长时间组合下质量波动较大，需要收窄工艺窗口",
+                "建议提升关键参数在线记录颗粒度，以增强结果可追溯性",
+            ]
+        )
+        return difficulties
 
     def _propose_mitigation_strategies(self) -> List[str]:
         """提出缓解策略"""
-        return [
-            "加强人员培训",
-            "完善设备维护",
-            "建立标准操作规程"
-        ]
+        return ["加强人员培训", "完善设备维护", "建立标准操作规程"]
 
     def _define_short_term_goals(self, outlook_results: str) -> List[str]:
         """定义短期目标"""
-        return [
-            "完成工艺参数微调",
-            "优化生产流程",
-            "降低生产成本"
-        ]
+        return ["完成工艺参数微调", "优化生产流程", "降低生产成本"]
 
     def _define_medium_term_plans(self, outlook_results: str) -> List[str]:
         """定义中期计划"""
-        return [
-            "进行中试放大",
-            "申请产品认证",
-            "开展市场测试"
-        ]
+        return ["进行中试放大", "申请产品认证", "开展市场测试"]
 
     def _define_long_term_vision(self, outlook_results: str) -> str:
         """定义长期愿景"""
@@ -652,16 +791,12 @@ class ReportAnalyst(BaseAgent):
             "year2": "工业化和规模化",
             "year3": "产品系列化和国际化",
             "year4": "技术升级和新产品开发",
-            "year5": "行业领先和品牌建设"
+            "year5": "行业领先和品牌建设",
         }
 
     def _plan_market_expansion(self) -> List[str]:
         """规划市场扩张"""
-        return [
-            "国内主要市场",
-            "亚洲周边市场",
-            "欧美高端市场"
-        ]
+        return ["国内主要市场", "亚洲周边市场", "欧美高端市场"]
 
     def _evaluate_goal_attainment(self, evaluation_results: str) -> Dict[str, Any]:
         """评估目标达成度"""
@@ -669,7 +804,7 @@ class ReportAnalyst(BaseAgent):
             "technical_goals": "100%达成",
             "quality_goals": "100%达成",
             "economic_goals": "95%达成",
-            "schedule_goals": "提前10%完成"
+            "schedule_goals": "提前10%完成",
         }
 
     def _assess_efficiency(self, evaluation_results: str) -> Dict[str, Any]:
@@ -678,7 +813,7 @@ class ReportAnalyst(BaseAgent):
             "resource_utilization": "95%",
             "cost_efficiency": "高",
             "time_efficiency": "高",
-            "quality_efficiency": "高"
+            "quality_efficiency": "高",
         }
 
     def _review_risk_management(self, evaluation_results: str) -> Dict[str, Any]:
@@ -687,7 +822,7 @@ class ReportAnalyst(BaseAgent):
             "risk_identification": "准确",
             "risk_assessment": "全面",
             "mitigation_effectiveness": "良好",
-            "contingency_planning": "充分"
+            "contingency_planning": "充分",
         }
 
     def _evaluate_team_performance(self, evaluation_results: str) -> Dict[str, Any]:
@@ -696,7 +831,7 @@ class ReportAnalyst(BaseAgent):
             "technical_capability": "优秀",
             "collaboration": "良好",
             "innovation": "突出",
-            "execution": "高效"
+            "execution": "高效",
         }
 
     def _provide_overall_assessment(self, evaluation_results: str) -> str:
@@ -705,39 +840,57 @@ class ReportAnalyst(BaseAgent):
 
     def _provide_technical_recommendations(self, conclusion_results: str) -> List[str]:
         """提供技术建议"""
-        return [
-            "继续优化工艺参数",
-            "加强质量控制",
-            "开发新技术路线"
-        ]
+        return ["继续优化工艺参数", "加强质量控制", "开发新技术路线"]
 
     def _provide_business_recommendations(self, outlook_results: str) -> List[str]:
         """提供业务建议"""
-        return [
-            "扩大生产规模",
-            "拓展销售渠道",
-            "加强品牌建设"
-        ]
+        return ["扩大生产规模", "拓展销售渠道", "加强品牌建设"]
 
     def _provide_research_recommendations(self, simulation_report: Dict) -> List[str]:
         """提供研究建议"""
-        return [
-            "深入研究机理",
-            "优化实验设计",
-            "开发新方法"
-        ]
+        recommendations = simulation_report.get("recommendations", [])[:]
+        recommendations.extend(
+            [
+                "围绕推荐参数窗口开展确认性实验，验证跨批次稳定性",
+                "补充成本-品质联合优化分析，提升产业化决策价值",
+            ]
+        )
+        return recommendations[:5]
+
+    def _get_effective_plan(self, final_rd_plan: Dict) -> Dict[str, Any]:
+        if not isinstance(final_rd_plan, dict):
+            return {}
+        nested_plan = final_rd_plan.get("final_rd_plan")
+        return nested_plan if isinstance(nested_plan, dict) else final_rd_plan
+
+    def _extract_budget_amount(self, funding: str) -> Optional[float]:
+        if not isinstance(funding, str):
+            return None
+
+        import re
+
+        match = re.search(r"(\d+(?:\.\d+)?)", funding)
+        if not match:
+            return None
+        return float(match.group(1))
+
+    def _format_correlation_statement(self, value: Any, left: str, right: str) -> str:
+        if not isinstance(value, (int, float)):
+            return f"{left}与{right}关系已完成定性分析"
+        direction = "正相关" if value >= 0 else "负相关"
+        return f"{left}与{right}呈{direction}，r = {value:.3f}"
 
     def _provide_implementation_recommendations(self, final_rd_plan: Dict) -> List[str]:
         """提供实施建议"""
-        return [
-            "制定详细实施计划",
-            "加强人员培训",
-            "完善质量体系"
-        ]
+        return ["制定详细实施计划", "加强人员培训", "完善质量体系"]
 
-    def _compile_reference_materials(self, intelligence_report: Dict) -> List[Dict[str, str]]:
+    def _compile_reference_materials(
+        self, intelligence_report: Dict
+    ) -> List[Dict[str, str]]:
         """编译参考文献"""
-        return intelligence_report.get("references", [])
+        if isinstance(intelligence_report, dict):
+            return intelligence_report.get("references", [])
+        return []
 
     def _get_contact_information(self) -> Dict[str, str]:
         """获取联系信息"""
@@ -745,7 +898,7 @@ class ReportAnalyst(BaseAgent):
             "project_manager": "张三 - 项目经理",
             "technical_director": "李四 - 技术总监",
             "contact_email": "project@example.com",
-            "company_address": "某科技园区"
+            "company_address": "某科技园区",
         }
 
     def _create_glossary(self) -> Dict[str, str]:
@@ -754,13 +907,13 @@ class ReportAnalyst(BaseAgent):
             "提取率": "目标成分提取的百分比",
             "纯度": "产品中目标成分的含量",
             "活性保留率": "产品保留的生物活性比例",
-            "响应面法": "优化工艺参数的统计方法"
+            "响应面法": "优化工艺参数的统计方法",
         }
 
     def generate_markdown_report(self, report: Dict, filename: str):
         """生成Markdown格式的报告"""
         try:
-            with open(filename, 'w', encoding='utf-8') as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 f.write(self._create_markdown_content(report))
             print(f"Markdown报告已保存到: {filename}")
         except Exception as e:
@@ -771,89 +924,89 @@ class ReportAnalyst(BaseAgent):
         md_content = f"""# 研发项目结题/进度报告
 
 ## 项目基本信息
-- **项目名称**: {report['project_name']}
-- **报告日期**: {report['report_date']}
-- **报告版本**: {report['report_version']}
-- **报告状态**: {report['report_status']}
+- **项目名称**: {report["project_name"]}
+- **报告日期**: {report["report_date"]}
+- **报告版本**: {report["report_version"]}
+- **报告状态**: {report["report_status"]}
 
 ---
 
 ## 执行摘要
 
-{report['executive_summary']['project_background']}
+{report["executive_summary"]["project_background"]}
 
 ### 主要成就
-{chr(10).join(f"- {achievement}" for achievement in report['executive_summary']['key_achievements'])}
+{chr(10).join(f"- {achievement}" for achievement in report["executive_summary"]["key_achievements"])}
 
 ### 重要发现
-{chr(10).join(f"- {finding}" for finding in report['executive_summary']['major_findings'])}
+{chr(10).join(f"- {finding}" for finding in report["executive_summary"]["major_findings"])}
 
 ### 主要结论
-{report['executive_summary']['conclusions']}
+{report["executive_summary"]["conclusions"]}
 
 ### 建议
-{chr(10).join(f"- {recommendation}" for recommendation in report['executive_summary']['recommendations'])}
+{chr(10).join(f"- {recommendation}" for recommendation in report["executive_summary"]["recommendations"])}
 
 ---
 
 ## 1. 项目概述
 
 ### 1.1 研究背景
-{report['project_overview']['research_background']}
+{report["project_overview"]["research_background"]}
 
 ### 1.2 项目目标
-{chr(10).join(f"- {objective}" for objective in report['project_overview']['project_objectives'])}
+{chr(10).join(f"- {objective}" for objective in report["project_overview"]["project_objectives"])}
 
 ### 1.3 范围界定
-- **包含内容**: {report['project_overview']['scope_delimitations']['included']}
-- **排除内容**: {report['project_overview']['scope_delimitations']['excluded']}
+- **包含内容**: {report["project_overview"]["scope_delimitations"]["included"]}
+- **排除内容**: {report["project_overview"]["scope_delimitations"]["excluded"]}
 
 ### 1.4 方法论概述
-{report['project_overview']['methodology_overview']}
+{report["project_overview"]["methodology_overview"]}
 
 ---
 
 ## 2. 技术路线
 
 ### 2.1 技术选择
-- **选择技术**: {report['technical_approach']['technology_selection']['selected_technology']}
-- **选择标准**: {', '.join(report['technical_approach']['technology_selection']['selection_criteria'])}
-- **优势**: {', '.join(report['technical_approach']['technology_selection']['advantages'])}
+- **选择技术**: {report["technical_approach"]["technology_selection"]["selected_technology"]}
+- **选择标准**: {", ".join(report["technical_approach"]["technology_selection"]["selection_criteria"])}
+- **优势**: {", ".join(report["technical_approach"]["technology_selection"]["advantages"])}
 
 ### 2.2 工艺设计
-{report['technical_approach']['process_design']}
+{report["technical_approach"]["process_design"]}
 
 ### 2.3 参数优化
-- **最佳温度**: {report['technical_approach']['parameter_optimization']['optimized_parameters']['temperature']}
-- **最佳时间**: {report['technical_approach']['parameter_optimization']['optimized_parameters']['time']}
-- **最佳pH**: {report['technical_approach']['parameter_optimization']['optimized_parameters']['pH']}
-- **最佳浓度**: {report['technical_approach']['parameter_optimization']['optimized_parameters']['concentration']}
+- **最佳温度**: {report["technical_approach"]["parameter_optimization"]["optimized_parameters"]["temperature"]}
+- **最佳时间**: {report["technical_approach"]["parameter_optimization"]["optimized_parameters"]["time"]}
+- **最佳pH**: {report["technical_approach"]["parameter_optimization"]["optimized_parameters"]["pH"]}
+- **最佳浓度**: {report["technical_approach"]["parameter_optimization"]["optimized_parameters"]["concentration"]}
 
 ### 2.4 质量控制
-{report['technical_approach']['quality_control']}
+{report["technical_approach"]["quality_control"]}
 
 ---
 
 ## 3. 执行情况
 
 ### 3.1 时间线表现
-- **计划工期**: {report['execution_status']['timeline_performance']['planned_duration']}
-- **实际工期**: {report['execution_status']['timeline_performance']['actual_duration']}
-- **表现评价**: {report['execution_status']['timeline_performance']['performance']}
+- **计划工期**: {report["execution_status"]["timeline_performance"]["planned_duration"]}
+- **实际工期**: {report["execution_status"]["timeline_performance"]["actual_duration"]}
+- **表现评价**: {report["execution_status"]["timeline_performance"]["performance"]}
 
 ### 3.2 预算使用情况
-- **总预算**: {report['execution_status']['budget_utilization']['total_budget']}
-- **已使用**: {report['execution_status']['budget_utilization']['utilized_budget']}
-- **使用率**: {report['execution_status']['budget_utilization']['utilization_rate']}
-- **成本效率**: {report['execution_status']['budget_utilization']['cost_efficiency']}
+- **总预算**: {report["execution_status"]["budget_utilization"]["total_budget"]}
+- **已使用**: {report["execution_status"]["budget_utilization"]["utilized_budget"]}
+- **使用率**: {report["execution_status"]["budget_utilization"]["utilization_rate"]}
+- **成本效率**: {report["execution_status"]["budget_utilization"]["cost_efficiency"]}
 
 ### 3.3 资源配置
-{(lambda x: str(x)[:500] if str(x) else "暂无数据")(report['execution_status']['resource_allocation'])}
+{(lambda x: str(x)[:500] if str(x) else "暂无数据")(report["execution_status"]["resource_allocation"])}
 
 ### 3.4 里程碑成就
 """
 
-        for milestone in report['execution_status']['milestone_achievements']:
+        for milestone in report["execution_status"]["milestone_achievements"]:
             md_content += f"- **{milestone['milestone']}** ({milestone['date']}): {milestone['achievement']}\n"
 
         md_content += "\n---\n\n## 4. 实验结果\n\n### 4.1 数据概况\n"
@@ -862,7 +1015,7 @@ class ReportAnalyst(BaseAgent):
         md_content += f"- **成功率**: {report['experimental_results']['data_overview']['success_rate']}\n"
 
         md_content += "\n### 4.2 关键发现\n"
-        for finding in report['experimental_results']['key_findings']:
+        for finding in report["experimental_results"]["key_findings"]:
             md_content += f"- {finding}\n"
 
         md_content += "\n### 4.3 统计分析\n"
@@ -871,43 +1024,43 @@ class ReportAnalyst(BaseAgent):
         md_content += f"- **相关性分析**: {report['experimental_results']['statistical_analysis']['correlation_analysis']}\n"
 
         md_content += "\n---\n\n## 5. 科学结论\n\n### 5.1 技术可行性\n"
-        md_content += report['scientific_conclusions']['technical_feasibility'] + "\n\n"
+        md_content += report["scientific_conclusions"]["technical_feasibility"] + "\n\n"
 
         md_content += "### 5.2 产品质量\n"
-        md_content += report['scientific_conclusions']['product_quality'] + "\n\n"
+        md_content += report["scientific_conclusions"]["product_quality"] + "\n\n"
 
         md_content += "### 5.3 经济可行性\n"
-        md_content += report['scientific_conclusions']['economic_viability'] + "\n\n"
+        md_content += report["scientific_conclusions"]["economic_viability"] + "\n\n"
 
         md_content += "### 5.4 创新贡献\n"
-        for innovation in report['scientific_conclusions']['innovation_contributions']:
+        for innovation in report["scientific_conclusions"]["innovation_contributions"]:
             md_content += f"- {innovation}\n"
 
         md_content += "\n---\n\n## 6. 未来展望\n\n### 6.1 短期目标\n"
-        for goal in report['future_outlook']['short_term_goals']:
+        for goal in report["future_outlook"]["short_term_goals"]:
             md_content += f"- {goal}\n"
 
         md_content += "\n### 6.2 中期计划\n"
-        for plan in report['future_outlook']['medium_term_plans']:
+        for plan in report["future_outlook"]["medium_term_plans"]:
             md_content += f"- {plan}\n"
 
         md_content += "\n### 6.3 长期愿景\n"
-        md_content += report['future_outlook']['long_term_vision'] + "\n\n"
+        md_content += report["future_outlook"]["long_term_vision"] + "\n\n"
 
         md_content += "### 6.4 市场扩张\n"
-        for market in report['future_outlook']['market_expansion']:
+        for market in report["future_outlook"]["market_expansion"]:
             md_content += f"- {market}\n"
 
         md_content += "\n---\n\n## 7. 建议与结论\n\n### 7.1 技术建议\n"
-        for rec in report['recommendations']['technical_recommendations']:
+        for rec in report["recommendations"]["technical_recommendations"]:
             md_content += f"- {rec}\n"
 
         md_content += "\n### 7.2 业务建议\n"
-        for rec in report['recommendations']['business_recommendations']:
+        for rec in report["recommendations"]["business_recommendations"]:
             md_content += f"- {rec}\n"
 
         md_content += "\n### 7.3 总体评估\n"
-        md_content += report['project_evaluation']['overall_assessment'] + "\n"
+        md_content += report["project_evaluation"]["overall_assessment"] + "\n"
 
         md_content += "\n---\n\n## 附录\n\n详细数据和统计分析请参考JSON格式报告。"
 
@@ -916,6 +1069,7 @@ class ReportAnalyst(BaseAgent):
 
 class ReportIntegrationTool(BaseTool):
     """报告整合工具"""
+
     name: str = "报告整合工具"
     description: str = "整合各个Agent的输出结果"
 
@@ -926,6 +1080,7 @@ class ReportIntegrationTool(BaseTool):
 
 class DataAnalysisTool(BaseTool):
     """数据分析工具"""
+
     name: str = "数据分析工具"
     description: str = "深度分析实验数据"
 
@@ -936,6 +1091,7 @@ class DataAnalysisTool(BaseTool):
 
 class ConclusionGenerationTool(BaseTool):
     """结论生成工具"""
+
     name: str = "结论生成工具"
     description: str = "生成科学结论"
 
@@ -946,6 +1102,7 @@ class ConclusionGenerationTool(BaseTool):
 
 class OutlookGenerationTool(BaseTool):
     """展望生成工具"""
+
     name: str = "展望生成工具"
     description: str = "制定未来发展规划"
 
@@ -956,6 +1113,7 @@ class OutlookGenerationTool(BaseTool):
 
 class DocumentGenerationTool(BaseTool):
     """文档生成工具"""
+
     name: str = "文档生成工具"
     description: str = "生成最终项目文档"
 

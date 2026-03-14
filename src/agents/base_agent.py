@@ -8,6 +8,7 @@ Base Agent Definition
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional, ClassVar
 import json
+import asyncio
 from crewai import Agent
 from crewai.tools import BaseTool
 from langchain_ollama import ChatOllama
@@ -24,8 +25,12 @@ class BaseAgent(ABC):
     所有专业Agent的基类，提供通用的初始化和工具访问功能
     """
 
-    def __init__(self, agent_name: str, agent_description: str,
-                 tools: Optional[List[BaseTool]] = None):
+    def __init__(
+        self,
+        agent_name: str,
+        agent_description: str,
+        tools: Optional[List[BaseTool]] = None,
+    ):
         """
         初始化Agent
 
@@ -37,43 +42,56 @@ class BaseAgent(ABC):
         self.agent_name = agent_name
         self.agent_description = agent_description
         self.tools = tools or []
+        self.crewai_agent = None
 
         # 初始化 Ollama 模型
+        llm_config = model_config.get_llm_config("ollama")
         self.llm = ChatOllama(
-            model=model_config.ollama.model_name,
-            temperature=model_config.ollama.temperature,
-            base_url=model_config.ollama.base_url,
-            num_predict=model_config.ollama.max_tokens
+            model=llm_config["model"],
+            temperature=llm_config["temperature"],
+            base_url=llm_config["base_url"],
+            num_predict=llm_config["max_tokens"],
         )
 
         # 创建 CrewAI Agent 实例
         # Pass langchain LLM directly to avoid CrewAI's OpenAI default provider
-        self.crewai_agent = Agent(
-            role=agent_description[:100],  # Use part of description as role
-            goal=agent_description,  # Use full description as goal
-            backstory=agent_description,  # Use description as backstory
-            name=agent_name,
-            description=agent_description,
-            tools=self._create_crewai_tools(),
-            llm=self.llm,
-            allow_delegation=False,
-            verbose=True,
-            memory=True,
-            llm_kwargs={"model_name": model_config.ollama.model_name}
-        )
+        try:
+            self.crewai_agent = Agent(
+                role=agent_description[:100],
+                goal=agent_description,
+                backstory=agent_description,
+                name=agent_name,
+                description=agent_description,
+                tools=self._create_crewai_tools(),
+                llm=self.llm,
+                allow_delegation=False,
+                verbose=True,
+                memory=True,
+                llm_kwargs={
+                    "model": llm_config["model"],
+                    "base_url": llm_config["base_url"],
+                    "temperature": llm_config["temperature"],
+                    "num_predict": llm_config["max_tokens"],
+                },
+            )
+        except Exception as e:
+            print(
+                f"{self.agent_name} CrewAI初始化失败，切换到直接模型调用模式: {str(e)}"
+            )
+            self.crewai_agent = None
 
     def _create_crewai_tools(self) -> List[BaseTool]:
         """创建 CrewAI 兼容的工具"""
         crewai_tools = []
 
         # 添加基础搜索工具
-        if hasattr(self, '_create_search_tool'):
+        if hasattr(self, "_create_search_tool"):
             search_tool = self._create_search_tool()
             if search_tool:
                 crewai_tools.append(search_tool)
 
         # 添加专业工具
-        if hasattr(self, '_create_professional_tools'):
+        if hasattr(self, "_create_professional_tools"):
             professional_tools = self._create_professional_tools()
             crewai_tools.extend(professional_tools)
 
@@ -103,7 +121,9 @@ class BaseAgent(ABC):
         """
         pass
 
-    async def run_task(self, task_description: str, context: Optional[Dict] = None) -> str:
+    async def run_task(
+        self, task_description: str, context: Optional[Dict] = None
+    ) -> str:
         """
         运行任务
 
@@ -115,13 +135,16 @@ class BaseAgent(ABC):
             任务执行结果
         """
         try:
+            if self.crewai_agent is None:
+                return await self._run_task_direct(task_description, context)
+
             # 创建任务
             from crewai import Task
 
             task = Task(
                 description=task_description,
                 agent=self.crewai_agent,
-                expected_output="详细的执行结果"
+                expected_output="详细的执行结果",
             )
 
             # 执行任务
@@ -129,14 +152,36 @@ class BaseAgent(ABC):
             return result
 
         except Exception as e:
-            error_msg = f"任务执行失败: {str(e)}"
-            print(error_msg)
-            return error_msg
+            try:
+                return await self._run_task_direct(task_description, context)
+            except Exception as inner_error:
+                error_msg = f"任务执行失败: {str(inner_error)}"
+                print(error_msg)
+                return error_msg
+
+    async def _run_task_direct(
+        self, task_description: str, context: Optional[Dict] = None
+    ) -> str:
+        if context and isinstance(context, dict):
+            context_text = json.dumps(context, ensure_ascii=False)
+            prompt = (
+                f"你是{self.agent_name}。"
+                f"\n任务说明:\n{task_description}\n"
+                f"\n上下文信息:\n{context_text}\n"
+                "\n请给出详细、结构化、可执行的专业分析。"
+            )
+        else:
+            prompt = task_description
+
+        response = await asyncio.to_thread(self.llm.invoke, prompt)
+        if hasattr(response, "content"):
+            return str(response.content)
+        return str(response)
 
     def save_result(self, result: Dict[str, Any], filename: str):
         """保存结果到文件"""
         try:
-            with open(filename, 'w', encoding='utf-8') as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
             print(f"结果已保存到: {filename}")
         except Exception as e:
@@ -148,12 +193,13 @@ class BaseAgent(ABC):
             "name": self.agent_name,
             "description": self.agent_description,
             "tools": [tool.name for tool in self.tools],
-            "model": model_config.ollama.model_name
+            "model": model_config.ollama.model_name,
         }
 
 
 class SearchTool(BaseTool):
     """基础搜索工具"""
+
     name: str = "搜索工具"
     description: str = "用于搜索相关信息"
     _search_func: Optional[callable] = None
@@ -187,7 +233,9 @@ class SearchTool(BaseTool):
         for i, result in enumerate(results[:5], 1):
             formatted_results.append(f"{i}. {result.get('title', '无标题')}")
             formatted_results.append(f"   链接: {result.get('url', '无链接')}")
-            formatted_results.append(f"   摘要: {result.get('snippet', '无摘要')[:200]}...")
+            formatted_results.append(
+                f"   摘要: {result.get('snippet', '无摘要')[:200]}..."
+            )
             formatted_results.append("")
 
         return "\n".join(formatted_results)
@@ -195,6 +243,7 @@ class SearchTool(BaseTool):
 
 class ScienceDataTool(BaseTool):
     """科学数据分析工具"""
+
     name: str = "数据分析工具"
     description: str = "用于分析实验数据"
 
@@ -203,6 +252,7 @@ class ScienceDataTool(BaseTool):
         try:
             # 尝试解析JSON数据
             import json
+
             data_dict = json.loads(data) if isinstance(data, str) else data
 
             # 进行简单分析

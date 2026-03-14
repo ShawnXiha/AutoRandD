@@ -11,6 +11,7 @@ import os
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from crewai import Crew, Process, Task
+from src.config.model_config import model_config
 
 from ..agents.industry_researcher import IntelligenceResearcher
 from ..agents.rd_planner import RAndDPlanner
@@ -37,43 +38,88 @@ class FoodRDWorkflow:
             "plan_reviewer": PlanReviewer(),
             "experiment_designer": ExperimentDesigner(),
             "data_simulator": DataSimulator(),
-            "report_analyst": ReportAnalyst()
+            "report_analyst": ReportAnalyst(),
         }
 
     def _create_crew(self) -> Crew:
         """创建CrewAI团队"""
         agent_list = []
         for name, agent in self.agents.items():
-            agent_list.append(agent.crewai_agent)
+            if agent.crewai_agent is not None:
+                agent_list.append(agent.crewai_agent)
+
+        if not agent_list:
+            return None
 
         return Crew(
             agents=agent_list,
             process=Process.sequential,
             verbose=True,
             max_rpm=10,
-            task_timeout=3600
+            task_timeout=3600,
         )
 
-    def _create_task(self, task_description: str, agent_name: str, context: Optional[List] = None) -> Task:
+    def _create_task(
+        self, task_description: str, agent_name: str, context: Optional[List] = None
+    ) -> Task:
         """创建任务"""
         agent = self.agents[agent_name]
+
+        if agent.crewai_agent is None:
+            return None
 
         return Task(
             description=task_description,
             agent=agent.crewai_agent,
             expected_output="详细的执行结果",
             context=context or [],
-            async_task=True
+            async_task=True,
         )
 
-    async def run_intelligence_research(self, research_goal: str, funding: str) -> Dict[str, Any]:
+    def _normalize_reviewed_plan(self, reviewed_plan: Dict[str, Any]) -> Dict[str, Any]:
+        if not isinstance(reviewed_plan, dict):
+            return {}
+
+        normalized_plan = reviewed_plan.get("final_rd_plan", reviewed_plan)
+        if not isinstance(normalized_plan, dict):
+            normalized_plan = {}
+
+        normalized_plan = normalized_plan.copy()
+
+        if "project_overview" not in normalized_plan:
+            normalized_plan["project_overview"] = {}
+
+        project_overview = normalized_plan["project_overview"]
+        if (
+            "project_objectives" not in project_overview
+            and "project_objective" in project_overview
+            and project_overview["project_objective"]
+        ):
+            project_overview["project_objectives"] = [
+                project_overview["project_objective"]
+            ]
+
+        for field in [
+            "review_summary",
+            "technical_review",
+            "budget_review",
+            "feasibility_assessment",
+            "risk_assessment",
+            "improvement_suggestions",
+            "risk_contingency_plan",
+        ]:
+            if field in reviewed_plan and field not in normalized_plan:
+                normalized_plan[field] = reviewed_plan[field]
+
+        return normalized_plan
+
+    async def run_intelligence_research(
+        self, research_goal: str, funding: str
+    ) -> Dict[str, Any]:
         """运行行业情报研究"""
         print("\n🔍 开始行业情报研究阶段...")
 
-        context = {
-            "research_goal": research_goal,
-            "funding": funding
-        }
+        context = {"research_goal": research_goal, "funding": funding}
 
         task_description = f"""
         作为行业情报研究员，请对以下研发目标进行全面分析：
@@ -124,15 +170,16 @@ class FoodRDWorkflow:
             print(f"❌ 行业情报研究失败: {str(e)}")
             return {"error": str(e)}
 
-    async def run_rd_planning(self, research_goal: str, funding: str,
-                           intelligence_report: Dict) -> Dict[str, Any]:
+    async def run_rd_planning(
+        self, research_goal: str, funding: str, intelligence_report: Dict
+    ) -> Dict[str, Any]:
         """运行研发规划"""
         print("\n📋 开始研发规划阶段...")
 
         context = {
             "research_goal": research_goal,
             "funding": funding,
-            "intelligence_report": intelligence_report
+            "intelligence_report": intelligence_report,
         }
 
         task_description = f"""
@@ -200,8 +247,9 @@ class FoodRDWorkflow:
             print(f"❌ 研发规划失败: {str(e)}")
             return {"error": str(e)}
 
-    async def run_plan_review(self, research_goal: str, funding: str,
-                            rd_plan: Dict, intelligence_report: Dict) -> Dict[str, Any]:
+    async def run_plan_review(
+        self, research_goal: str, funding: str, rd_plan: Dict, intelligence_report: Dict
+    ) -> Dict[str, Any]:
         """运行方案评审"""
         print("\n🔬 开始方案评审阶段...")
 
@@ -209,7 +257,7 @@ class FoodRDWorkflow:
             "research_goal": research_goal,
             "funding": funding,
             "rd_plan": rd_plan,
-            "intelligence_report": intelligence_report
+            "intelligence_report": intelligence_report,
         }
 
         task_description = f"""
@@ -257,74 +305,19 @@ class FoodRDWorkflow:
             print(f"❌ 方案评审失败: {str(e)}")
             return {"error": str(e)}
 
-    async def run_experiment_design(self, research_goal: str, final_rd_plan: Dict) -> Dict[str, Any]:
+    async def run_experiment_design(
+        self, research_goal: str, final_rd_plan: Dict
+    ) -> Dict[str, Any]:
         """运行实验设计"""
         print("\n🧪 开始实验设计阶段...")
 
         context = {
             "research_goal": research_goal,
-            "final_rd_plan": final_rd_plan
+            "final_rd_plan": self._normalize_reviewed_plan(final_rd_plan),
         }
 
-        task_description = f"""
-        作为实验设计与操作员，请为以下研发目标设计详细的实验方案：
-
-        研发目标: {research_goal}
-        最终研发计划: {json.dumps(final_rd_plan, ensure_ascii=False)[:1500]}
-
-        设计要求：
-        1. 精确的工艺参数（温度、时间、pH、料液比等）
-        2. 详细的实验步骤和操作规程
-        3. 完整的质量控制方案
-        4. 标准化的记录表格
-
-        请提供详细的《实验操作标准指南(SOP)》。
-        """
-
-        task = self._create_task(task_description, "experiment_designer", [])
-
         try:
-            result = f"""
-实验操作标准指南(SOP) - {research_goal}
-
-1. 实验目的
-   研究西湖龙井与安吉白茶混合拼配冷萃液的香气保留工艺参数
-
-2. 实验原理
-   通过控制温度、时间、原料配比等参数，优化冷萃工艺，最大化保留茶叶香气成分
-
-3. 实验设备
-   - 恒温水浴锅（精度±0.5℃）
-   - 电子天平（精度±0.01g）
-   - 冷萃设备
-   - 香气分析仪
-
-4. 实验步骤
-   4.1 原料预处理
-       - 挑选符合标准的茶叶原料
-       - 按照比例（西湖龙井:安吉白茶 = 1:1）混合
-       - 称量备用（每次实验50g）
-
-   4.2 冷萃过程
-       - 设置温度：4-6℃
-       - 冷萃时间：8-12小时
-       - 加水比例：1:30（茶水比）
-
-   4.3 香气检测
-       - 使用顶空固相微萃取法
-       - GC-MS分析
-       - 记录香气成分和含量
-
-5. 质量控制
-   - 每批实验做平行样（n=3）
-   - 记录所有操作参数
-   - 建立标准操作流程
-
-6. 安全注意事项
-   - 防止低温烫伤
-   - 实验室保持通风
-   - 废液规范处理
-"""
+            result = await self.agents["experiment_designer"].process(context)
             self.workflow_results["sop_document"] = result
             print("✅ 实验设计完成")
             return result
@@ -332,73 +325,16 @@ class FoodRDWorkflow:
             print(f"❌ 实验设计失败: {str(e)}")
             return {"error": str(e)}
 
-    async def run_data_simulation(self, research_goal: str, sop_document: Dict) -> Dict[str, Any]:
+    async def run_data_simulation(
+        self, research_goal: str, sop_document: Dict
+    ) -> Dict[str, Any]:
         """运行数据模拟"""
         print("\n📊 开始数据模拟阶段...")
 
-        context = {
-            "research_goal": research_goal,
-            "sop_document": sop_document
-        }
-
-        task_description = f"""
-        作为实验数据模拟器，请模拟以下实验过程：
-
-        研发目标: {research_goal}
-        SOP文档: {json.dumps(sop_document, ensure_ascii=False)[:1000]}
-
-        模拟要求：
-        1. 生成符合物理/化学规律的实验数据
-        2. 体现变量间的逻辑关系
-        3. 包含成功与失败的对照组
-        4. 提供详细的数据统计分析
-
-        请提供完整的《模拟实验数据记录表》。
-        """
-
-        task = self._create_task(task_description, "data_simulator", [])
+        context = {"research_goal": research_goal, "sop_document": sop_document}
 
         try:
-            result = f"""
-模拟实验数据报告 - {research_goal}
-
-实验设计：
-- 变量1：温度（4℃, 6℃, 8℃）
-- 变量2：时间（8h, 10h, 12h）
-- 原料配比（1:1, 2:1, 1:2）
-
-实验数据矩阵（36组实验）：
-
-温度影响分析：
-- 4℃时香气保留率最高（92.3%）
-- 随温度升高，保留率逐渐降低
-- 8℃时仍有85.7%的保留率
-
-时间影响分析：
-- 8小时基本完成萃取
-- 10-12小时香气成分略有下降
-- 最佳时间窗口：8-10小时
-
-配比影响分析：
-- 1:1配比综合表现最佳
-- 各项指标均衡稳定
-
-统计分析结果：
-- 方差分析（ANOVA）：p<0.01，差异显著
-- 回归分析：建立香气保留率预测模型
-- 相关性分析：温度与时间呈负相关
-
-异常情况模拟：
-- 温度过高导致氧化（保留率<70%）
-- 时间过长导致香气挥发
-- 边缘效应（极端参数）
-
-数据质量评估：
-- 总样本数：36个
-- 有效数据：34个
-- 完整性：94.4%
-- 准确性：基于物理化学规律
-"""
+            result = await self.agents["data_simulator"].process(context)
             self.workflow_results["simulation_report"] = result
             print("✅ 数据模拟完成")
             return result
@@ -406,9 +342,15 @@ class FoodRDWorkflow:
             print(f"❌ 数据模拟失败: {str(e)}")
             return {"error": str(e)}
 
-    async def run_report_analysis(self, research_goal: str, funding: str,
-                                intelligence_report: Dict, final_rd_plan: Dict,
-                                sop_document: Dict, simulation_report: Dict) -> Dict[str, Any]:
+    async def run_report_analysis(
+        self,
+        research_goal: str,
+        funding: str,
+        intelligence_report: Dict,
+        final_rd_plan: Dict,
+        sop_document: Dict,
+        simulation_report: Dict,
+    ) -> Dict[str, Any]:
         """运行报告分析"""
         print("\n📝 开始报告分析阶段...")
 
@@ -416,92 +358,32 @@ class FoodRDWorkflow:
             "research_goal": research_goal,
             "funding": funding,
             "intelligence_report": intelligence_report,
-            "final_rd_plan": final_rd_plan,
+            "final_rd_plan": self._normalize_reviewed_plan(final_rd_plan),
             "sop_document": sop_document,
-            "simulation_report": simulation_report
+            "simulation_report": simulation_report,
         }
 
-        task_description = f"""
-        作为报告总结分析师，请整合所有工作成果，生成最终的项目报告：
-
-        研发目标: {research_goal}
-        资金预算: {funding}
-
-        需要整合的文档：
-        1. 行业情报报告
-        2. 最终研发计划
-        3. 实验SOP文档
-        4. 模拟实验数据
-
-        报告要求：
-        1. 深度分析模拟数据
-        2. 总结科学发现和结论
-        3. 提出未来发展方向
-        4. 评估项目整体成果
-
-        请提供完整的《研发项目结题/进度报告》。
-        """
-
-        task = self._create_task(task_description, "report_analyst", [])
-
         try:
-            result = f"""
-研发项目结题报告 - {research_goal}
-
-项目基本信息：
-- 项目名称：西湖龙井与安吉白茶混合拼配冷萃液的香气保留工艺研发
-- 资金预算：{funding}
-- 执行时间：2024年3月-2024年12月
-- 研发团队：5人专业团队
-
-执行摘要：
-本项目成功完成了西湖龙井与安吉白茶混合拼配冷萃液的香气保留工艺研发，通过系统化的研究方法和严格的实验验证，达到了预期研发目标。
-
-主要成果：
-1. 理论成果
-   - 建立了香气保留机理模型
-   - 确定了最佳工艺参数范围
-   - 形成了完整的理论体系
-
-2. 技术成果
-   - 开发了冷萃工艺技术
-   - 制定了质量标准
-   - 申请发明专利2项
-
-3. 经济效益
-   - 生产成本降低15%
-   - 产品质量提升20%
-   - 预期年产值超500万元
-
-科学结论：
-1. 香气保留的关键技术参数已明确
-2. 工艺可行性得到充分验证
-3. 产品质量稳定可靠
-4. 具有良好的产业化前景
-
-未来展望：
-1. 加快产业化进程
-2. 拓展产品应用场景
-3. 深化产学研合作
-4. 扩大市场影响力
-
-改进建议：
-1. 加强质量控制体系建设
-2. 优化供应链管理
-3. 提升品牌影响力
-4. 开发系列产品
-
-结题结论：
-项目各项指标均达到预期目标，项目成功结题。
-"""
-            self.workflow_results["final_report"] = result
+            report_data = await self.agents["report_analyst"].process(context)
+            markdown_content = report_data.get(
+                "markdown_content",
+                self.agents["report_analyst"]._create_markdown_content(report_data),
+            )
+            result = {
+                "final_report": markdown_content,
+                "final_report_data": report_data,
+            }
+            self.workflow_results["final_report"] = markdown_content
+            self.workflow_results["final_report_data"] = report_data
             print("✅ 报告分析完成")
             return result
         except Exception as e:
             print(f"❌ 报告分析失败: {str(e)}")
             return {"error": str(e)}
 
-    async def run_full_workflow(self, research_goal: str, funding: str) -> Dict[str, Any]:
+    async def run_full_workflow(
+        self, research_goal: str, funding: str
+    ) -> Dict[str, Any]:
         """运行完整的工作流"""
         print("=" * 60)
         print("🚀 食品与生工领域多智能体研发系统启动")
@@ -514,17 +396,23 @@ class FoodRDWorkflow:
         os.makedirs("data", exist_ok=True)
 
         # 1. 行业情报研究
-        intelligence_report = await self.run_intelligence_research(research_goal, funding)
+        intelligence_report = await self.run_intelligence_research(
+            research_goal, funding
+        )
         if "error" in intelligence_report:
             return {"error": f"工作流执行失败: {intelligence_report['error']}"}
 
         # 2. 研发规划
-        rd_plan = await self.run_rd_planning(research_goal, funding, intelligence_report)
+        rd_plan = await self.run_rd_planning(
+            research_goal, funding, intelligence_report
+        )
         if "error" in rd_plan:
             return {"error": f"工作流执行失败: {rd_plan['error']}"}
 
         # 3. 方案评审
-        final_rd_plan = await self.run_plan_review(research_goal, funding, rd_plan, intelligence_report)
+        final_rd_plan = await self.run_plan_review(
+            research_goal, funding, rd_plan, intelligence_report
+        )
         if "error" in final_rd_plan:
             return {"error": f"工作流执行失败: {final_rd_plan['error']}"}
 
@@ -539,12 +427,16 @@ class FoodRDWorkflow:
             return {"error": f"工作流执行失败: {simulation_report['error']}"}
 
         # 6. 报告分析
-        final_report = await self.run_report_analysis(
-            research_goal, funding, intelligence_report, final_rd_plan,
-            sop_document, simulation_report
+        final_report_bundle = await self.run_report_analysis(
+            research_goal,
+            funding,
+            intelligence_report,
+            final_rd_plan,
+            sop_document,
+            simulation_report,
         )
-        if "error" in final_report:
-            return {"error": f"工作流执行失败: {final_report['error']}"}
+        if "error" in final_report_bundle:
+            return {"error": f"工作流执行失败: {final_report_bundle['error']}"}
 
         # 保存完整的工作流结果
         workflow_summary = {
@@ -552,20 +444,24 @@ class FoodRDWorkflow:
             "execution_date": datetime.now().isoformat(),
             "research_goal": research_goal,
             "funding": funding,
+            "final_report": self.workflow_results.get("final_report", ""),
+            "final_report_data": self.workflow_results.get("final_report_data", {}),
             "agents_executed": [
                 "industry_researcher",
                 "rd_planner",
                 "plan_reviewer",
                 "experiment_designer",
                 "data_simulator",
-                "report_analyst"
+                "report_analyst",
             ],
             "outputs": self.workflow_results,
-            "status": "completed"
+            "status": "completed",
         }
 
-        summary_filename = f"data/workflow_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        with open(summary_filename, 'w', encoding='utf-8') as f:
+        summary_filename = (
+            f"data/workflow_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
+        with open(summary_filename, "w", encoding="utf-8") as f:
             json.dump(workflow_summary, f, ensure_ascii=False, indent=2)
 
         print("\n" + "=" * 60)
@@ -589,14 +485,16 @@ class FoodRDWorkflow:
             "current_stage": len(self.workflow_results),
             "total_stages": 6,
             "completed_stages": [
-                stage for stage, result in self.workflow_results.items()
+                stage
+                for stage, result in self.workflow_results.items()
                 if "error" not in result
             ],
             "failed_stages": [
-                stage for stage, result in self.workflow_results.items()
+                stage
+                for stage, result in self.workflow_results.items()
                 if "error" in result
             ],
-            "results": self.workflow_results
+            "results": self.workflow_results,
         }
 
     def get_agent_info(self) -> Dict[str, Any]:
@@ -607,13 +505,22 @@ class FoodRDWorkflow:
         }
 
 
-def create_workflow() -> FoodRDWorkflow:
+def create_workflow(
+    model_name: Optional[str] = None,
+    model_profile: Optional[str] = None,
+) -> FoodRDWorkflow:
     """创建工作流实例的工厂函数"""
+    model_config.apply_runtime_model(model_name=model_name, model_profile=model_profile)
     return FoodRDWorkflow()
 
 
 # 便捷函数
-async def run_food_rd_project(research_goal: str, funding: str) -> Dict[str, Any]:
+async def run_food_rd_project(
+    research_goal: str,
+    funding: str,
+    model_name: Optional[str] = None,
+    model_profile: Optional[str] = None,
+) -> Dict[str, Any]:
     """
     运行完整的食品研发项目的便捷函数
 
@@ -624,5 +531,6 @@ async def run_food_rd_project(research_goal: str, funding: str) -> Dict[str, Any
     Returns:
         工作流执行结果
     """
+    model_config.apply_runtime_model(model_name=model_name, model_profile=model_profile)
     workflow = FoodRDWorkflow()
     return await workflow.run_full_workflow(research_goal, funding)

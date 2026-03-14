@@ -16,6 +16,7 @@ from rich.table import Table
 from rich.markdown import Markdown
 
 from src.workflows.food_rd_workflow import create_workflow, run_food_rd_project
+from src.config.model_config import model_config
 
 # 初始化 Rich 控制台
 console = Console()
@@ -31,6 +32,7 @@ def display_welcome():
 
 ## 🚀 系统简介
 本系统采用 CrewAI 框架，集成了 6 个专业智能体，为您提供完整的食品与生物工程研发解决方案。
+当前默认模型：{model_config.ollama.model_name}
 
 ## 🤖 系统架构
 - **行业情报研究员**: 搜集行业信息，分析技术难点
@@ -61,7 +63,7 @@ def display_agent_info():
         table.add_row(
             info["name"],
             info["description"],
-            ", ".join(info["tools"]) if info["tools"] else "通用"
+            ", ".join(info["tools"]) if info["tools"] else "通用",
         )
 
     console.print(table)
@@ -82,9 +84,15 @@ async def run_interactive_mode():
         console.print("❌ 资金预算不能为空！")
         return
 
+    model_hint = console.input(
+        "\n[bold blue]3. 模型(可选, glm/kimi/qwen/具体模型名):[/] "
+    ).strip()
+    selected_model = model_hint if model_hint else model_config.ollama.model_name
+
     console.print(f"\n🎯 开始执行研发项目...")
     console.print(f"   研发目标: {research_goal}")
     console.print(f"   资金预算: {funding}")
+    console.print(f"   模型配置: {selected_model}")
     console.print("")
 
     # 运行工作流
@@ -96,7 +104,11 @@ async def run_interactive_mode():
         task = progress.add_task("正在执行研发流程...", total=None)
 
         try:
-            result = await run_food_rd_project(research_goal, funding)
+            result = await run_food_rd_project(
+                research_goal,
+                funding,
+                model_name=selected_model,
+            )
             progress.update(task, description="✅ 研发项目执行完成")
 
             # 显示结果摘要
@@ -109,9 +121,9 @@ async def run_interactive_mode():
 
 def display_results_summary(result: dict):
     """显示结果摘要"""
-    console.print("\n" + "="*60)
+    console.print("\n" + "=" * 60)
     console.print("🎉 研发项目执行完成！", style="bold green")
-    console.print("="*60)
+    console.print("=" * 60)
 
     # 显示执行状态
     status = result.get("status", "unknown")
@@ -136,7 +148,7 @@ def display_results_summary(result: dict):
         exec_time = datetime.fromisoformat(execution_date).strftime("%Y-%m-%d %H:%M:%S")
         console.print(f"\n⏰ 执行时间: {exec_time}")
 
-    console.print("\n" + "="*60)
+    console.print("\n" + "=" * 60)
 
 
 def display_help():
@@ -158,10 +170,13 @@ python main.py
 在 `.env` 文件中设置以下参数：
 ```
 OLLAMA_MODEL=qwen3.5:cloud
+MODEL_PROFILE=glm
 OLLAMA_BASE_URL=http://localhost:11434/v1
 OLLAMA_TEMPERATURE=0.7
 OLLAMA_MAX_TOKENS=4000
 ```
+
+可用别名：`glm`→`glm-5:cloud`，`kimi`→`kimi-k2:latest`，`qwen`→`qwen3.5:cloud`
 
 ### 输入参数
 1. **研发目标**: 具体的研发项目描述
@@ -189,15 +204,15 @@ async def main():
     display_welcome()
 
     while True:
-        console.print("\n" + "="*50)
+        console.print("\n" + "=" * 50)
         console.print("🔧 主菜单", style="bold blue")
-        console.print("="*50)
+        console.print("=" * 50)
 
         choices = [
             ("开始新的研发项目", "1"),
             ("查看系统信息", "2"),
             ("显示帮助信息", "3"),
-            ("退出系统", "4")
+            ("退出系统", "4"),
         ]
 
         for choice, key in choices:
